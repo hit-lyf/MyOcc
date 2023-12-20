@@ -1,0 +1,3382 @@
+2023-12-03 10:18:52,528 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.7.13 (default, Mar 29 2022, 02:18:16) [GCC 7.5.0]
+CUDA available: True
+GPU 0,1,2,3,4,5,6,7: NVIDIA RTX A6000
+CUDA_HOME: /usr/local/cuda-11.1
+NVCC: Build cuda_11.1.TC455_06.29069683_0
+GCC: gcc (GCC) 6.1.0
+PyTorch: 1.10.1+cu111
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.2.3 (Git Hash 7336ca9f055cf1bfa13efb658fe15dc9b41f0740)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX512
+  - CUDA Runtime 11.1
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.0.5
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.1, CUDNN_VERSION=8.0.5, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.10.1, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.11.2+cu111
+OpenCV: 4.8.1
+MMCV: 1.4.0
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.1
+MMDetection: 2.14.0
+MMSegmentation: 0.14.1
+MMDetection3D: 0.17.1+unknown
+------------------------------------------------------------
+
+2023-12-03 10:18:53,518 - mmdet - INFO - Distributed training: False
+2023-12-03 10:18:54,454 - mmdet - INFO - Config:
+point_cloud_range = [-50, -50, -5.0, 50, 50, 3.0]
+class_names = [
+    'barrier', 'bicycle', 'bus', 'car', 'construction_vehicle', 'motorcycle',
+    'pedestrian', 'traffic_cone', 'trailer', 'truck', 'driveable_surface',
+    'other_flat', 'sidewalk', 'terrain', 'manmade', 'vegetation'
+]
+dataset_type = 'CustomNuScenesOccDataset'
+data_root = '/mnt/sda-20T/rj/data/nuscenes'
+input_modality = dict(
+    use_lidar=False,
+    use_camera=True,
+    use_radar=False,
+    use_map=False,
+    use_external=True)
+file_client_args = dict(backend='disk')
+train_pipeline = [
+    dict(type='LoadMultiViewImageFromFiles', to_float32=True),
+    dict(type='PhotoMetricDistortionMultiViewImage'),
+    dict(type='LoadOccupancy', use_semantic=True),
+    dict(
+        type='NormalizeMultiviewImage',
+        mean=[103.53, 116.28, 123.675],
+        std=[1.0, 1.0, 1.0],
+        to_rgb=False),
+    dict(type='PadMultiViewImage', size_divisor=32),
+    dict(
+        type='DefaultFormatBundle3D',
+        class_names=[
+            'barrier', 'bicycle', 'bus', 'car', 'construction_vehicle',
+            'motorcycle', 'pedestrian', 'traffic_cone', 'trailer', 'truck',
+            'driveable_surface', 'other_flat', 'sidewalk', 'terrain',
+            'manmade', 'vegetation'
+        ],
+        with_label=False),
+    dict(type='CustomCollect3D', keys=['img', 'gt_occ'])
+]
+test_pipeline = [
+    dict(type='LoadMultiViewImageFromFiles', to_float32=True),
+    dict(type='LoadOccupancy', use_semantic=True),
+    dict(
+        type='NormalizeMultiviewImage',
+        mean=[103.53, 116.28, 123.675],
+        std=[1.0, 1.0, 1.0],
+        to_rgb=False),
+    dict(type='PadMultiViewImage', size_divisor=32),
+    dict(
+        type='DefaultFormatBundle3D',
+        class_names=[
+            'barrier', 'bicycle', 'bus', 'car', 'construction_vehicle',
+            'motorcycle', 'pedestrian', 'traffic_cone', 'trailer', 'truck',
+            'driveable_surface', 'other_flat', 'sidewalk', 'terrain',
+            'manmade', 'vegetation'
+        ],
+        with_label=False),
+    dict(type='CustomCollect3D', keys=['img', 'gt_occ'])
+]
+eval_pipeline = [
+    dict(
+        type='LoadPointsFromFile',
+        coord_type='LIDAR',
+        load_dim=5,
+        use_dim=5,
+        file_client_args=dict(backend='disk')),
+    dict(
+        type='LoadPointsFromMultiSweeps',
+        sweeps_num=10,
+        file_client_args=dict(backend='disk')),
+    dict(
+        type='DefaultFormatBundle3D',
+        class_names=[
+            'car', 'truck', 'trailer', 'bus', 'construction_vehicle',
+            'bicycle', 'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
+        ],
+        with_label=False),
+    dict(type='Collect3D', keys=['points'])
+]
+data = dict(
+    samples_per_gpu=1,
+    workers_per_gpu=16,
+    train=dict(
+        type='CustomNuScenesOccDataset',
+        data_root='/mnt/sda-20T/rj/data/nuscenes',
+        ann_file=
+        '/mnt/sda-20T/rj/data/nuscenes/anno_file/SurroundOcc/nuscenes_infos_train.pkl',
+        pipeline=[
+            dict(type='LoadMultiViewImageFromFiles', to_float32=True),
+            dict(type='PhotoMetricDistortionMultiViewImage'),
+            dict(type='LoadOccupancy', use_semantic=True),
+            dict(
+                type='NormalizeMultiviewImage',
+                mean=[103.53, 116.28, 123.675],
+                std=[1.0, 1.0, 1.0],
+                to_rgb=False),
+            dict(type='PadMultiViewImage', size_divisor=32),
+            dict(
+                type='DefaultFormatBundle3D',
+                class_names=[
+                    'barrier', 'bicycle', 'bus', 'car', 'construction_vehicle',
+                    'motorcycle', 'pedestrian', 'traffic_cone', 'trailer',
+                    'truck', 'driveable_surface', 'other_flat', 'sidewalk',
+                    'terrain', 'manmade', 'vegetation'
+                ],
+                with_label=False),
+            dict(type='CustomCollect3D', keys=['img', 'gt_occ'])
+        ],
+        classes=[
+            'barrier', 'bicycle', 'bus', 'car', 'construction_vehicle',
+            'motorcycle', 'pedestrian', 'traffic_cone', 'trailer', 'truck',
+            'driveable_surface', 'other_flat', 'sidewalk', 'terrain',
+            'manmade', 'vegetation'
+        ],
+        modality=dict(
+            use_lidar=False,
+            use_camera=True,
+            use_radar=False,
+            use_map=False,
+            use_external=True),
+        test_mode=False,
+        box_type_3d='LiDAR',
+        use_valid_flag=True,
+        occ_size=[200, 200, 16],
+        pc_range=[-50, -50, -5.0, 50, 50, 3.0],
+        use_semantic=True),
+    val=dict(
+        type='CustomNuScenesOccDataset',
+        ann_file=
+        '/mnt/sda-20T/rj/data/nuscenes/anno_file/SurroundOcc/nuscenes_infos_val.pkl',
+        pipeline=[
+            dict(type='LoadMultiViewImageFromFiles', to_float32=True),
+            dict(type='LoadOccupancy', use_semantic=True),
+            dict(
+                type='NormalizeMultiviewImage',
+                mean=[103.53, 116.28, 123.675],
+                std=[1.0, 1.0, 1.0],
+                to_rgb=False),
+            dict(type='PadMultiViewImage', size_divisor=32),
+            dict(
+                type='DefaultFormatBundle3D',
+                class_names=[
+                    'barrier', 'bicycle', 'bus', 'car', 'construction_vehicle',
+                    'motorcycle', 'pedestrian', 'traffic_cone', 'trailer',
+                    'truck', 'driveable_surface', 'other_flat', 'sidewalk',
+                    'terrain', 'manmade', 'vegetation'
+                ],
+                with_label=False),
+            dict(type='CustomCollect3D', keys=['img', 'gt_occ'])
+        ],
+        classes=[
+            'barrier', 'bicycle', 'bus', 'car', 'construction_vehicle',
+            'motorcycle', 'pedestrian', 'traffic_cone', 'trailer', 'truck',
+            'driveable_surface', 'other_flat', 'sidewalk', 'terrain',
+            'manmade', 'vegetation'
+        ],
+        modality=dict(
+            use_lidar=False,
+            use_camera=True,
+            use_radar=False,
+            use_map=False,
+            use_external=True),
+        test_mode=True,
+        box_type_3d='LiDAR',
+        data_root='/mnt/sda-20T/rj/data/nuscenes',
+        occ_size=[200, 200, 16],
+        pc_range=[-50, -50, -5.0, 50, 50, 3.0],
+        use_semantic=True),
+    test=dict(
+        type='CustomNuScenesOccDataset',
+        data_root='/mnt/sda-20T/rj/data/nuscenes',
+        ann_file=
+        '/mnt/sda-20T/rj/data/nuscenes/anno_file/SurroundOcc/nuscenes_infos_val.pkl',
+        pipeline=[
+            dict(type='LoadMultiViewImageFromFiles', to_float32=True),
+            dict(type='LoadOccupancy', use_semantic=True),
+            dict(
+                type='NormalizeMultiviewImage',
+                mean=[103.53, 116.28, 123.675],
+                std=[1.0, 1.0, 1.0],
+                to_rgb=False),
+            dict(type='PadMultiViewImage', size_divisor=32),
+            dict(
+                type='DefaultFormatBundle3D',
+                class_names=[
+                    'barrier', 'bicycle', 'bus', 'car', 'construction_vehicle',
+                    'motorcycle', 'pedestrian', 'traffic_cone', 'trailer',
+                    'truck', 'driveable_surface', 'other_flat', 'sidewalk',
+                    'terrain', 'manmade', 'vegetation'
+                ],
+                with_label=False),
+            dict(type='CustomCollect3D', keys=['img', 'gt_occ'])
+        ],
+        classes=[
+            'barrier', 'bicycle', 'bus', 'car', 'construction_vehicle',
+            'motorcycle', 'pedestrian', 'traffic_cone', 'trailer', 'truck',
+            'driveable_surface', 'other_flat', 'sidewalk', 'terrain',
+            'manmade', 'vegetation'
+        ],
+        modality=dict(
+            use_lidar=False,
+            use_camera=True,
+            use_radar=False,
+            use_map=False,
+            use_external=True),
+        test_mode=True,
+        box_type_3d='LiDAR',
+        occ_size=[200, 200, 16],
+        pc_range=[-50, -50, -5.0, 50, 50, 3.0],
+        use_semantic=True),
+    shuffler_sampler=dict(type='DistributedGroupSampler'),
+    nonshuffler_sampler=dict(type='DistributedSampler'))
+evaluation = dict(
+    interval=1,
+    pipeline=[
+        dict(type='LoadMultiViewImageFromFiles', to_float32=True),
+        dict(type='LoadOccupancy', use_semantic=True),
+        dict(
+            type='NormalizeMultiviewImage',
+            mean=[103.53, 116.28, 123.675],
+            std=[1.0, 1.0, 1.0],
+            to_rgb=False),
+        dict(type='PadMultiViewImage', size_divisor=32),
+        dict(
+            type='DefaultFormatBundle3D',
+            class_names=[
+                'barrier', 'bicycle', 'bus', 'car', 'construction_vehicle',
+                'motorcycle', 'pedestrian', 'traffic_cone', 'trailer', 'truck',
+                'driveable_surface', 'other_flat', 'sidewalk', 'terrain',
+                'manmade', 'vegetation'
+            ],
+            with_label=False),
+        dict(type='CustomCollect3D', keys=['img', 'gt_occ'])
+    ])
+checkpoint_config = dict(interval=1)
+log_config = dict(
+    interval=1,
+    hooks=[dict(type='TextLoggerHook'),
+           dict(type='TensorboardLoggerHook')])
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+work_dir = './work_dirs/surroundocc'
+load_from = '/home/renjun/program/occupancy_network/myproject/myocc/ckpts/r101_dcn_fcos3d_pretrain.pth'
+resume_from = None
+workflow = [('train', 1)]
+plugin = True
+plugin_dir = 'projects/mmdet3d_plugin/'
+occ_size = [200, 200, 16]
+use_semantic = True
+img_norm_cfg = dict(
+    mean=[103.53, 116.28, 123.675], std=[1.0, 1.0, 1.0], to_rgb=False)
+_dim_ = [128, 256, 512]
+_ffn_dim_ = [256, 512, 1024]
+volume_h_ = [100, 50, 25]
+volume_w_ = [100, 50, 25]
+volume_z_ = [8, 4, 2]
+_num_points_ = [2, 4, 8]
+_num_layers_ = [1, 3, 6]
+model = dict(
+    type='SurroundOcc',
+    use_grid_mask=True,
+    use_semantic=True,
+    img_backbone=dict(
+        type='ResNet',
+        depth=101,
+        num_stages=4,
+        out_indices=(1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN2d', requires_grad=False),
+        norm_eval=True,
+        style='caffe',
+        dcn=dict(type='DCNv2', deform_groups=1, fallback_on_stride=False),
+        stage_with_dcn=(False, False, True, True)),
+    img_neck=dict(
+        type='FPN',
+        in_channels=[512, 1024, 2048],
+        out_channels=512,
+        start_level=0,
+        add_extra_convs='on_output',
+        num_outs=3,
+        relu_before_extra_convs=True),
+    pts_bbox_head=dict(
+        type='OccHead',
+        volume_h=[100, 50, 25],
+        volume_w=[100, 50, 25],
+        volume_z=[8, 4, 2],
+        num_query=900,
+        num_classes=17,
+        conv_input=[512, 256, 256, 128, 128, 64, 64],
+        conv_output=[256, 256, 128, 128, 64, 64, 32],
+        out_indices=[0, 2, 4, 6],
+        upsample_strides=[1, 2, 1, 2, 1, 2, 1],
+        embed_dims=[128, 256, 512],
+        img_channels=[512, 512, 512],
+        use_semantic=True,
+        transformer_template=dict(
+            type='PerceptionTransformer',
+            embed_dims=[128, 256, 512],
+            encoder=dict(
+                type='OccEncoder',
+                num_layers=[1, 3, 6],
+                pc_range=[-50, -50, -5.0, 50, 50, 3.0],
+                return_intermediate=False,
+                transformerlayers=dict(
+                    type='OccLayer',
+                    attn_cfgs=[
+                        dict(
+                            type='SpatialCrossAttention',
+                            pc_range=[-50, -50, -5.0, 50, 50, 3.0],
+                            deformable_attention=dict(
+                                type='MSDeformableAttention3D',
+                                embed_dims=[128, 256, 512],
+                                num_points=[2, 4, 8],
+                                num_levels=1),
+                            embed_dims=[128, 256, 512])
+                    ],
+                    feedforward_channels=[256, 512, 1024],
+                    ffn_dropout=0.1,
+                    embed_dims=[128, 256, 512],
+                    conv_num=2,
+                    operation_order=('cross_attn', 'norm', 'ffn', 'norm',
+                                     'conv'))))))
+find_unused_parameters = True
+optimizer = dict(
+    type='AdamW',
+    lr=0.0002,
+    paramwise_cfg=dict(
+        bypass_duplicate=True,
+        custom_keys=dict(img_backbone=dict(lr_mult=0.1))),
+    weight_decay=0.01)
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+lr_config = dict(
+    policy='CosineAnnealing',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.3333333333333333,
+    min_lr_ratio=0.001)
+total_epochs = 24
+runner = dict(type='EpochBasedRunner', max_epochs=24)
+gpu_ids = range(0, 1)
+
+2023-12-03 10:18:54,454 - mmdet - INFO - Set random seed to 0, deterministic: False
+2023-12-03 10:18:56,220 - mmdet - INFO - initialize ResNet with init_cfg [{'type': 'Kaiming', 'layer': 'Conv2d'}, {'type': 'Constant', 'val': 1, 'layer': ['_BatchNorm', 'GroupNorm']}]
+2023-12-03 10:18:56,357 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,358 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,359 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,360 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,361 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,361 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,362 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,363 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,369 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,374 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,379 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,384 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,389 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,394 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,400 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,405 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,410 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,415 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,421 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,426 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,431 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,436 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,441 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,446 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,452 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,457 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,462 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,467 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,472 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,478 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,490 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,504 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,518 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-12-03 10:18:56,543 - mmdet - INFO - initialize FPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+Name of parameter - Initialization information
+
+pts_bbox_head.transformer.0.level_embeds - torch.Size([4, 128]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.0.cams_embeds - torch.Size([6, 128]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.weight - torch.Size([32, 128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.attention_weights.weight - torch.Size([16, 128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.attention_weights.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.value_proj.weight - torch.Size([128, 128]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.value_proj.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.output_proj.weight - torch.Size([128, 128]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.output_proj.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.ffns.0.layers.0.0.weight - torch.Size([256, 128]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.0.encoder.layers.0.ffns.0.layers.0.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.ffns.0.layers.1.weight - torch.Size([128, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.0.encoder.layers.0.ffns.0.layers.1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.norms.0.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.norms.0.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.norms.1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.norms.1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.deblock.0.0.weight - torch.Size([128, 128, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.0.encoder.layers.0.deblock.0.1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.deblock.0.1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.deblock.1.0.weight - torch.Size([128, 128, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.0.encoder.layers.0.deblock.1.1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.encoder.layers.0.deblock.1.1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.0.reference_points.weight - torch.Size([3, 128]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.0.reference_points.bias - torch.Size([3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.level_embeds - torch.Size([4, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.cams_embeds - torch.Size([6, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.weight - torch.Size([64, 256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.attention_weights.weight - torch.Size([32, 256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.attention_weights.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.value_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.value_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.output_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.output_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.ffns.0.layers.0.0.weight - torch.Size([512, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.0.ffns.0.layers.0.0.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.ffns.0.layers.1.weight - torch.Size([256, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.0.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.deblock.0.0.weight - torch.Size([256, 256, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.0.deblock.0.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.deblock.0.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.deblock.1.0.weight - torch.Size([256, 256, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.0.deblock.1.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.0.deblock.1.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.sampling_offsets.weight - torch.Size([64, 256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.sampling_offsets.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.attention_weights.weight - torch.Size([32, 256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.attention_weights.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.value_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.value_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.output_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.output_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.ffns.0.layers.0.0.weight - torch.Size([512, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.1.ffns.0.layers.0.0.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.ffns.0.layers.1.weight - torch.Size([256, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.1.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.deblock.0.0.weight - torch.Size([256, 256, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.1.deblock.0.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.deblock.0.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.deblock.1.0.weight - torch.Size([256, 256, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.1.deblock.1.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.1.deblock.1.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.sampling_offsets.weight - torch.Size([64, 256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.sampling_offsets.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.attention_weights.weight - torch.Size([32, 256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.attention_weights.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.value_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.value_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.output_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.output_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.ffns.0.layers.0.0.weight - torch.Size([512, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.2.ffns.0.layers.0.0.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.ffns.0.layers.1.weight - torch.Size([256, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.2.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.deblock.0.0.weight - torch.Size([256, 256, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.2.deblock.0.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.deblock.0.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.deblock.1.0.weight - torch.Size([256, 256, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.encoder.layers.2.deblock.1.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.encoder.layers.2.deblock.1.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.1.reference_points.weight - torch.Size([3, 256]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.1.reference_points.bias - torch.Size([3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.level_embeds - torch.Size([4, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.cams_embeds - torch.Size([6, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.weight - torch.Size([128, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.attention_weights.weight - torch.Size([64, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.attention_weights.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.value_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.value_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.output_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.output_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.ffns.0.layers.0.0.weight - torch.Size([1024, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.0.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.ffns.0.layers.1.weight - torch.Size([512, 1024]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.0.ffns.0.layers.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.norms.0.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.norms.0.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.norms.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.norms.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.deblock.0.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.0.deblock.0.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.deblock.0.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.deblock.1.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.0.deblock.1.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.0.deblock.1.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.sampling_offsets.weight - torch.Size([128, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.sampling_offsets.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.attention_weights.weight - torch.Size([64, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.attention_weights.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.value_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.value_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.output_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.output_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.ffns.0.layers.0.0.weight - torch.Size([1024, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.1.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.ffns.0.layers.1.weight - torch.Size([512, 1024]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.1.ffns.0.layers.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.norms.0.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.norms.0.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.norms.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.norms.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.deblock.0.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.1.deblock.0.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.deblock.0.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.deblock.1.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.1.deblock.1.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.1.deblock.1.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.sampling_offsets.weight - torch.Size([128, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.sampling_offsets.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.attention_weights.weight - torch.Size([64, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.attention_weights.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.value_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.value_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.output_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.output_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.ffns.0.layers.0.0.weight - torch.Size([1024, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.2.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.ffns.0.layers.1.weight - torch.Size([512, 1024]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.2.ffns.0.layers.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.norms.0.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.norms.0.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.norms.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.norms.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.deblock.0.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.2.deblock.0.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.deblock.0.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.deblock.1.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.2.deblock.1.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.2.deblock.1.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.sampling_offsets.weight - torch.Size([128, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.sampling_offsets.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.attention_weights.weight - torch.Size([64, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.attention_weights.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.value_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.value_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.output_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.output_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.ffns.0.layers.0.0.weight - torch.Size([1024, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.3.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.ffns.0.layers.1.weight - torch.Size([512, 1024]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.3.ffns.0.layers.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.norms.0.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.norms.0.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.norms.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.norms.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.deblock.0.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.3.deblock.0.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.deblock.0.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.deblock.1.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.3.deblock.1.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.3.deblock.1.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.sampling_offsets.weight - torch.Size([128, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.sampling_offsets.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.attention_weights.weight - torch.Size([64, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.attention_weights.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.value_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.value_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.output_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.output_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.ffns.0.layers.0.0.weight - torch.Size([1024, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.4.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.ffns.0.layers.1.weight - torch.Size([512, 1024]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.4.ffns.0.layers.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.norms.0.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.norms.0.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.norms.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.norms.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.deblock.0.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.4.deblock.0.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.deblock.0.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.deblock.1.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.4.deblock.1.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.4.deblock.1.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.sampling_offsets.weight - torch.Size([128, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.sampling_offsets.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.attention_weights.weight - torch.Size([64, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.attention_weights.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.value_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.value_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.output_proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.output_proj.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.ffns.0.layers.0.0.weight - torch.Size([1024, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.5.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.ffns.0.layers.1.weight - torch.Size([512, 1024]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.5.ffns.0.layers.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.norms.0.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.norms.0.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.norms.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.norms.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.deblock.0.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.5.deblock.0.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.deblock.0.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.deblock.1.0.weight - torch.Size([512, 512, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.encoder.layers.5.deblock.1.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.encoder.layers.5.deblock.1.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transformer.2.reference_points.weight - torch.Size([3, 512]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.transformer.2.reference_points.bias - torch.Size([3]): 
+Initialized by user-defined `init_weights` in OccHead  
+
+pts_bbox_head.deblocks.0.0.weight - torch.Size([256, 512, 3, 3, 3]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.0.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.0.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.1.0.weight - torch.Size([256, 256, 2, 2, 2]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.1.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.1.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.2.0.weight - torch.Size([128, 256, 3, 3, 3]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.2.1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.2.1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.3.0.weight - torch.Size([128, 128, 2, 2, 2]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.3.1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.3.1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.4.0.weight - torch.Size([64, 128, 3, 3, 3]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.4.1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.4.1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.5.0.weight - torch.Size([64, 64, 2, 2, 2]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.5.1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.5.1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.6.0.weight - torch.Size([32, 64, 3, 3, 3]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.6.1.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.deblocks.6.1.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.occ.0.weight - torch.Size([17, 256, 1, 1, 1]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.occ.1.weight - torch.Size([17, 128, 1, 1, 1]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.occ.2.weight - torch.Size([17, 64, 1, 1, 1]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.occ.3.weight - torch.Size([17, 32, 1, 1, 1]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.volume_embedding.0.weight - torch.Size([80000, 128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.volume_embedding.1.weight - torch.Size([10000, 256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.volume_embedding.2.weight - torch.Size([1250, 512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transfer_conv.0.0.weight - torch.Size([128, 512, 1, 1]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transfer_conv.0.0.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transfer_conv.1.0.weight - torch.Size([256, 512, 1, 1]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transfer_conv.1.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transfer_conv.2.0.weight - torch.Size([512, 512, 1, 1]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+pts_bbox_head.transfer_conv.2.0.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.0.conv1.weight - torch.Size([64, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer1.0.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.0.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer1.0.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.0.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.0.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer1.0.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer1.0.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.0.downsample.0.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer1.0.downsample.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.0.downsample.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.1.conv1.weight - torch.Size([64, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer1.1.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.1.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer1.1.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.1.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.1.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer1.1.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer1.1.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.2.conv1.weight - torch.Size([64, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer1.2.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.2.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.2.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer1.2.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.2.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer1.2.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer1.2.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer1.2.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.0.conv1.weight - torch.Size([128, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.0.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.0.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.0.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.0.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.0.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.0.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer2.0.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.0.downsample.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.0.downsample.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.1.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.1.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.1.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.1.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.1.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.1.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.1.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer2.1.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.2.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.2.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.2.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.2.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.2.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.2.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.2.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.2.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer2.2.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.3.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.3.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.3.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.3.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.3.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.3.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer2.3.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer2.3.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer2.3.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.0.conv1.weight - torch.Size([256, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.0.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.0.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.0.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.0.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.0.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.0.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.0.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.0.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.0.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.0.downsample.0.weight - torch.Size([1024, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.0.downsample.1.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.0.downsample.1.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.1.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.1.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.1.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.1.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.1.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.1.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.1.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.1.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.1.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.1.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.2.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.2.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.2.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.2.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.2.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.2.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.2.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.2.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.2.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.2.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.2.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.3.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.3.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.3.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.3.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.3.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.3.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.3.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.3.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.3.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.3.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.3.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.4.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.4.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.4.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.4.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.4.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.4.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.4.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.4.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.4.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.4.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.4.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.5.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.5.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.5.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.5.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.5.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.5.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.5.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.5.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.5.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.5.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.5.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.6.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.6.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.6.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.6.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.6.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.6.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.6.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.6.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.6.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.6.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.6.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.7.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.7.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.7.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.7.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.7.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.7.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.7.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.7.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.7.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.7.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.7.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.8.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.8.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.8.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.8.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.8.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.8.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.8.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.8.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.8.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.8.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.8.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.9.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.9.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.9.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.9.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.9.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.9.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.9.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.9.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.9.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.9.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.9.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.10.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.10.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.10.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.10.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.10.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.10.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.10.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.10.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.10.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.10.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.10.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.11.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.11.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.11.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.11.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.11.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.11.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.11.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.11.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.11.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.11.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.11.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.12.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.12.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.12.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.12.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.12.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.12.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.12.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.12.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.12.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.12.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.12.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.13.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.13.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.13.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.13.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.13.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.13.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.13.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.13.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.13.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.13.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.13.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.14.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.14.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.14.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.14.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.14.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.14.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.14.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.14.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.14.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.14.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.14.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.15.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.15.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.15.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.15.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.15.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.15.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.15.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.15.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.15.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.15.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.15.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.16.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.16.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.16.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.16.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.16.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.16.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.16.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.16.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.16.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.16.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.16.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.17.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.17.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.17.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.17.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.17.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.17.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.17.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.17.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.17.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.17.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.17.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.18.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.18.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.18.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.18.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.18.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.18.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.18.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.18.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.18.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.18.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.18.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.19.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.19.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.19.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.19.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.19.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.19.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.19.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.19.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.19.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.19.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.19.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.20.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.20.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.20.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.20.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.20.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.20.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.20.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.20.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.20.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.20.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.20.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.21.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.21.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.21.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.21.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.21.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.21.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.21.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.21.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.21.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.21.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.21.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.22.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.22.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.22.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.22.conv2.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.22.conv2.conv_offset.weight - torch.Size([27, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer3.22.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.22.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.22.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer3.22.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer3.22.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer3.22.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.0.conv1.weight - torch.Size([512, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer4.0.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.0.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer4.0.conv2.conv_offset.weight - torch.Size([27, 512, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer4.0.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.0.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.0.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.0.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer4.0.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer4.0.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.0.downsample.0.weight - torch.Size([2048, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer4.0.downsample.1.weight - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.0.downsample.1.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.1.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer4.1.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.1.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer4.1.conv2.conv_offset.weight - torch.Size([27, 512, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer4.1.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.1.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.1.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.1.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer4.1.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer4.1.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.2.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer4.2.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.2.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.2.conv2.weight - torch.Size([512, 512, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer4.2.conv2.conv_offset.weight - torch.Size([27, 512, 3, 3]): 
+Initialized by user-defined `init_weights` in ModulatedDeformConv2dPack  
+
+img_backbone.layer4.2.conv2.conv_offset.bias - torch.Size([27]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.2.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.2.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_backbone.layer4.2.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+img_backbone.layer4.2.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+img_backbone.layer4.2.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_neck.lateral_convs.0.conv.weight - torch.Size([512, 512, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+img_neck.lateral_convs.0.conv.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_neck.lateral_convs.1.conv.weight - torch.Size([512, 1024, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+img_neck.lateral_convs.1.conv.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_neck.lateral_convs.2.conv.weight - torch.Size([512, 2048, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+img_neck.lateral_convs.2.conv.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_neck.fpn_convs.0.conv.weight - torch.Size([512, 512, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+img_neck.fpn_convs.0.conv.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_neck.fpn_convs.1.conv.weight - torch.Size([512, 512, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+img_neck.fpn_convs.1.conv.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+
+img_neck.fpn_convs.2.conv.weight - torch.Size([512, 512, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+img_neck.fpn_convs.2.conv.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SurroundOcc  
+2023-12-03 10:18:56,596 - mmdet - INFO - Model:
+SurroundOcc(
+  (pts_bbox_head): OccHead(
+    (transformer): ModuleList(
+      (0): PerceptionTransformer(
+        (encoder): OccEncoder(
+          (layers): ModuleList(
+            (0): OccLayer(
+              (attentions): ModuleList(
+                (0): SpatialCrossAttention(
+                  (dropout): Dropout(p=0.1, inplace=False)
+                  (deformable_attention): MSDeformableAttention3D(
+                    (sampling_offsets): Linear(in_features=128, out_features=32, bias=True)
+                    (attention_weights): Linear(in_features=128, out_features=16, bias=True)
+                    (value_proj): Linear(in_features=128, out_features=128, bias=True)
+                  )
+                  (output_proj): Linear(in_features=128, out_features=128, bias=True)
+                )
+              )
+              (ffns): ModuleList(
+                (0): FFN(
+                  (activate): ReLU(inplace=True)
+                  (layers): Sequential(
+                    (0): Sequential(
+                      (0): Linear(in_features=128, out_features=256, bias=True)
+                      (1): ReLU(inplace=True)
+                      (2): Dropout(p=0.1, inplace=False)
+                    )
+                    (1): Linear(in_features=256, out_features=128, bias=True)
+                    (2): Dropout(p=0.1, inplace=False)
+                  )
+                  (dropout_layer): Identity()
+                )
+              )
+              (norms): ModuleList(
+                (0): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+                (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              )
+              (deblock): ModuleList(
+                (0): Sequential(
+                  (0): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 128, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+                (1): Sequential(
+                  (0): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 128, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+              )
+            )
+          )
+        )
+        (reference_points): Linear(in_features=128, out_features=3, bias=True)
+      )
+      (1): PerceptionTransformer(
+        (encoder): OccEncoder(
+          (layers): ModuleList(
+            (0): OccLayer(
+              (attentions): ModuleList(
+                (0): SpatialCrossAttention(
+                  (dropout): Dropout(p=0.1, inplace=False)
+                  (deformable_attention): MSDeformableAttention3D(
+                    (sampling_offsets): Linear(in_features=256, out_features=64, bias=True)
+                    (attention_weights): Linear(in_features=256, out_features=32, bias=True)
+                    (value_proj): Linear(in_features=256, out_features=256, bias=True)
+                  )
+                  (output_proj): Linear(in_features=256, out_features=256, bias=True)
+                )
+              )
+              (ffns): ModuleList(
+                (0): FFN(
+                  (activate): ReLU(inplace=True)
+                  (layers): Sequential(
+                    (0): Sequential(
+                      (0): Linear(in_features=256, out_features=512, bias=True)
+                      (1): ReLU(inplace=True)
+                      (2): Dropout(p=0.1, inplace=False)
+                    )
+                    (1): Linear(in_features=512, out_features=256, bias=True)
+                    (2): Dropout(p=0.1, inplace=False)
+                  )
+                  (dropout_layer): Identity()
+                )
+              )
+              (norms): ModuleList(
+                (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+                (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+              )
+              (deblock): ModuleList(
+                (0): Sequential(
+                  (0): Conv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 256, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+                (1): Sequential(
+                  (0): Conv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 256, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+              )
+            )
+            (1): OccLayer(
+              (attentions): ModuleList(
+                (0): SpatialCrossAttention(
+                  (dropout): Dropout(p=0.1, inplace=False)
+                  (deformable_attention): MSDeformableAttention3D(
+                    (sampling_offsets): Linear(in_features=256, out_features=64, bias=True)
+                    (attention_weights): Linear(in_features=256, out_features=32, bias=True)
+                    (value_proj): Linear(in_features=256, out_features=256, bias=True)
+                  )
+                  (output_proj): Linear(in_features=256, out_features=256, bias=True)
+                )
+              )
+              (ffns): ModuleList(
+                (0): FFN(
+                  (activate): ReLU(inplace=True)
+                  (layers): Sequential(
+                    (0): Sequential(
+                      (0): Linear(in_features=256, out_features=512, bias=True)
+                      (1): ReLU(inplace=True)
+                      (2): Dropout(p=0.1, inplace=False)
+                    )
+                    (1): Linear(in_features=512, out_features=256, bias=True)
+                    (2): Dropout(p=0.1, inplace=False)
+                  )
+                  (dropout_layer): Identity()
+                )
+              )
+              (norms): ModuleList(
+                (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+                (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+              )
+              (deblock): ModuleList(
+                (0): Sequential(
+                  (0): Conv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 256, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+                (1): Sequential(
+                  (0): Conv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 256, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+              )
+            )
+            (2): OccLayer(
+              (attentions): ModuleList(
+                (0): SpatialCrossAttention(
+                  (dropout): Dropout(p=0.1, inplace=False)
+                  (deformable_attention): MSDeformableAttention3D(
+                    (sampling_offsets): Linear(in_features=256, out_features=64, bias=True)
+                    (attention_weights): Linear(in_features=256, out_features=32, bias=True)
+                    (value_proj): Linear(in_features=256, out_features=256, bias=True)
+                  )
+                  (output_proj): Linear(in_features=256, out_features=256, bias=True)
+                )
+              )
+              (ffns): ModuleList(
+                (0): FFN(
+                  (activate): ReLU(inplace=True)
+                  (layers): Sequential(
+                    (0): Sequential(
+                      (0): Linear(in_features=256, out_features=512, bias=True)
+                      (1): ReLU(inplace=True)
+                      (2): Dropout(p=0.1, inplace=False)
+                    )
+                    (1): Linear(in_features=512, out_features=256, bias=True)
+                    (2): Dropout(p=0.1, inplace=False)
+                  )
+                  (dropout_layer): Identity()
+                )
+              )
+              (norms): ModuleList(
+                (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+                (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+              )
+              (deblock): ModuleList(
+                (0): Sequential(
+                  (0): Conv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 256, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+                (1): Sequential(
+                  (0): Conv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 256, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+              )
+            )
+          )
+        )
+        (reference_points): Linear(in_features=256, out_features=3, bias=True)
+      )
+      (2): PerceptionTransformer(
+        (encoder): OccEncoder(
+          (layers): ModuleList(
+            (0): OccLayer(
+              (attentions): ModuleList(
+                (0): SpatialCrossAttention(
+                  (dropout): Dropout(p=0.1, inplace=False)
+                  (deformable_attention): MSDeformableAttention3D(
+                    (sampling_offsets): Linear(in_features=512, out_features=128, bias=True)
+                    (attention_weights): Linear(in_features=512, out_features=64, bias=True)
+                    (value_proj): Linear(in_features=512, out_features=512, bias=True)
+                  )
+                  (output_proj): Linear(in_features=512, out_features=512, bias=True)
+                )
+              )
+              (ffns): ModuleList(
+                (0): FFN(
+                  (activate): ReLU(inplace=True)
+                  (layers): Sequential(
+                    (0): Sequential(
+                      (0): Linear(in_features=512, out_features=1024, bias=True)
+                      (1): ReLU(inplace=True)
+                      (2): Dropout(p=0.1, inplace=False)
+                    )
+                    (1): Linear(in_features=1024, out_features=512, bias=True)
+                    (2): Dropout(p=0.1, inplace=False)
+                  )
+                  (dropout_layer): Identity()
+                )
+              )
+              (norms): ModuleList(
+                (0): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+                (1): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+              )
+              (deblock): ModuleList(
+                (0): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+                (1): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+              )
+            )
+            (1): OccLayer(
+              (attentions): ModuleList(
+                (0): SpatialCrossAttention(
+                  (dropout): Dropout(p=0.1, inplace=False)
+                  (deformable_attention): MSDeformableAttention3D(
+                    (sampling_offsets): Linear(in_features=512, out_features=128, bias=True)
+                    (attention_weights): Linear(in_features=512, out_features=64, bias=True)
+                    (value_proj): Linear(in_features=512, out_features=512, bias=True)
+                  )
+                  (output_proj): Linear(in_features=512, out_features=512, bias=True)
+                )
+              )
+              (ffns): ModuleList(
+                (0): FFN(
+                  (activate): ReLU(inplace=True)
+                  (layers): Sequential(
+                    (0): Sequential(
+                      (0): Linear(in_features=512, out_features=1024, bias=True)
+                      (1): ReLU(inplace=True)
+                      (2): Dropout(p=0.1, inplace=False)
+                    )
+                    (1): Linear(in_features=1024, out_features=512, bias=True)
+                    (2): Dropout(p=0.1, inplace=False)
+                  )
+                  (dropout_layer): Identity()
+                )
+              )
+              (norms): ModuleList(
+                (0): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+                (1): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+              )
+              (deblock): ModuleList(
+                (0): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+                (1): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+              )
+            )
+            (2): OccLayer(
+              (attentions): ModuleList(
+                (0): SpatialCrossAttention(
+                  (dropout): Dropout(p=0.1, inplace=False)
+                  (deformable_attention): MSDeformableAttention3D(
+                    (sampling_offsets): Linear(in_features=512, out_features=128, bias=True)
+                    (attention_weights): Linear(in_features=512, out_features=64, bias=True)
+                    (value_proj): Linear(in_features=512, out_features=512, bias=True)
+                  )
+                  (output_proj): Linear(in_features=512, out_features=512, bias=True)
+                )
+              )
+              (ffns): ModuleList(
+                (0): FFN(
+                  (activate): ReLU(inplace=True)
+                  (layers): Sequential(
+                    (0): Sequential(
+                      (0): Linear(in_features=512, out_features=1024, bias=True)
+                      (1): ReLU(inplace=True)
+                      (2): Dropout(p=0.1, inplace=False)
+                    )
+                    (1): Linear(in_features=1024, out_features=512, bias=True)
+                    (2): Dropout(p=0.1, inplace=False)
+                  )
+                  (dropout_layer): Identity()
+                )
+              )
+              (norms): ModuleList(
+                (0): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+                (1): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+              )
+              (deblock): ModuleList(
+                (0): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+                (1): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+              )
+            )
+            (3): OccLayer(
+              (attentions): ModuleList(
+                (0): SpatialCrossAttention(
+                  (dropout): Dropout(p=0.1, inplace=False)
+                  (deformable_attention): MSDeformableAttention3D(
+                    (sampling_offsets): Linear(in_features=512, out_features=128, bias=True)
+                    (attention_weights): Linear(in_features=512, out_features=64, bias=True)
+                    (value_proj): Linear(in_features=512, out_features=512, bias=True)
+                  )
+                  (output_proj): Linear(in_features=512, out_features=512, bias=True)
+                )
+              )
+              (ffns): ModuleList(
+                (0): FFN(
+                  (activate): ReLU(inplace=True)
+                  (layers): Sequential(
+                    (0): Sequential(
+                      (0): Linear(in_features=512, out_features=1024, bias=True)
+                      (1): ReLU(inplace=True)
+                      (2): Dropout(p=0.1, inplace=False)
+                    )
+                    (1): Linear(in_features=1024, out_features=512, bias=True)
+                    (2): Dropout(p=0.1, inplace=False)
+                  )
+                  (dropout_layer): Identity()
+                )
+              )
+              (norms): ModuleList(
+                (0): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+                (1): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+              )
+              (deblock): ModuleList(
+                (0): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+                (1): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+              )
+            )
+            (4): OccLayer(
+              (attentions): ModuleList(
+                (0): SpatialCrossAttention(
+                  (dropout): Dropout(p=0.1, inplace=False)
+                  (deformable_attention): MSDeformableAttention3D(
+                    (sampling_offsets): Linear(in_features=512, out_features=128, bias=True)
+                    (attention_weights): Linear(in_features=512, out_features=64, bias=True)
+                    (value_proj): Linear(in_features=512, out_features=512, bias=True)
+                  )
+                  (output_proj): Linear(in_features=512, out_features=512, bias=True)
+                )
+              )
+              (ffns): ModuleList(
+                (0): FFN(
+                  (activate): ReLU(inplace=True)
+                  (layers): Sequential(
+                    (0): Sequential(
+                      (0): Linear(in_features=512, out_features=1024, bias=True)
+                      (1): ReLU(inplace=True)
+                      (2): Dropout(p=0.1, inplace=False)
+                    )
+                    (1): Linear(in_features=1024, out_features=512, bias=True)
+                    (2): Dropout(p=0.1, inplace=False)
+                  )
+                  (dropout_layer): Identity()
+                )
+              )
+              (norms): ModuleList(
+                (0): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+                (1): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+              )
+              (deblock): ModuleList(
+                (0): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+                (1): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+              )
+            )
+            (5): OccLayer(
+              (attentions): ModuleList(
+                (0): SpatialCrossAttention(
+                  (dropout): Dropout(p=0.1, inplace=False)
+                  (deformable_attention): MSDeformableAttention3D(
+                    (sampling_offsets): Linear(in_features=512, out_features=128, bias=True)
+                    (attention_weights): Linear(in_features=512, out_features=64, bias=True)
+                    (value_proj): Linear(in_features=512, out_features=512, bias=True)
+                  )
+                  (output_proj): Linear(in_features=512, out_features=512, bias=True)
+                )
+              )
+              (ffns): ModuleList(
+                (0): FFN(
+                  (activate): ReLU(inplace=True)
+                  (layers): Sequential(
+                    (0): Sequential(
+                      (0): Linear(in_features=512, out_features=1024, bias=True)
+                      (1): ReLU(inplace=True)
+                      (2): Dropout(p=0.1, inplace=False)
+                    )
+                    (1): Linear(in_features=1024, out_features=512, bias=True)
+                    (2): Dropout(p=0.1, inplace=False)
+                  )
+                  (dropout_layer): Identity()
+                )
+              )
+              (norms): ModuleList(
+                (0): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+                (1): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+              )
+              (deblock): ModuleList(
+                (0): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+                (1): Sequential(
+                  (0): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+                  (1): GroupNorm(16, 512, eps=1e-05, affine=True)
+                  (2): ReLU(inplace=True)
+                )
+              )
+            )
+          )
+        )
+        (reference_points): Linear(in_features=512, out_features=3, bias=True)
+      )
+    )
+    (deblocks): ModuleList(
+      (0): Sequential(
+        (0): Conv3d(512, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+        (1): GroupNorm(16, 256, eps=1e-05, affine=True)
+        (2): ReLU(inplace=True)
+      )
+      (1): Sequential(
+        (0): ConvTranspose3d(256, 256, kernel_size=(2, 2, 2), stride=(2, 2, 2), bias=False)
+        (1): GroupNorm(16, 256, eps=1e-05, affine=True)
+        (2): ReLU(inplace=True)
+      )
+      (2): Sequential(
+        (0): Conv3d(256, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+        (1): GroupNorm(16, 128, eps=1e-05, affine=True)
+        (2): ReLU(inplace=True)
+      )
+      (3): Sequential(
+        (0): ConvTranspose3d(128, 128, kernel_size=(2, 2, 2), stride=(2, 2, 2), bias=False)
+        (1): GroupNorm(16, 128, eps=1e-05, affine=True)
+        (2): ReLU(inplace=True)
+      )
+      (4): Sequential(
+        (0): Conv3d(128, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+        (1): GroupNorm(16, 64, eps=1e-05, affine=True)
+        (2): ReLU(inplace=True)
+      )
+      (5): Sequential(
+        (0): ConvTranspose3d(64, 64, kernel_size=(2, 2, 2), stride=(2, 2, 2), bias=False)
+        (1): GroupNorm(16, 64, eps=1e-05, affine=True)
+        (2): ReLU(inplace=True)
+      )
+      (6): Sequential(
+        (0): Conv3d(64, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+        (1): GroupNorm(16, 32, eps=1e-05, affine=True)
+        (2): ReLU(inplace=True)
+      )
+    )
+    (occ): ModuleList(
+      (0): Conv3d(256, 17, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+      (1): Conv3d(128, 17, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+      (2): Conv3d(64, 17, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+      (3): Conv3d(32, 17, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+    )
+    (volume_embedding): ModuleList(
+      (0): Embedding(80000, 128)
+      (1): Embedding(10000, 256)
+      (2): Embedding(1250, 512)
+    )
+    (transfer_conv): ModuleList(
+      (0): Sequential(
+        (0): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1))
+        (1): ReLU(inplace=True)
+      )
+      (1): Sequential(
+        (0): Conv2d(512, 256, kernel_size=(1, 1), stride=(1, 1))
+        (1): ReLU(inplace=True)
+      )
+      (2): Sequential(
+        (0): Conv2d(512, 512, kernel_size=(1, 1), stride=(1, 1))
+        (1): ReLU(inplace=True)
+      )
+    )
+  )
+  (img_backbone): ResNet(
+    (conv1): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (relu): ReLU(inplace=True)
+    (maxpool): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
+    (layer1): ResLayer(
+      (0): Bottleneck(
+        (conv1): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (downsample): Sequential(
+          (0): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (1): Bottleneck(
+        (conv1): Conv2d(256, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (2): Bottleneck(
+        (conv1): Conv2d(256, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+    )
+    (layer2): ResLayer(
+      (0): Bottleneck(
+        (conv1): Conv2d(256, 128, kernel_size=(1, 1), stride=(2, 2), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (downsample): Sequential(
+          (0): Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (1): Bottleneck(
+        (conv1): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (2): Bottleneck(
+        (conv1): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (3): Bottleneck(
+        (conv1): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+    )
+    (layer3): ResLayer(
+      (0): Bottleneck(
+        (conv1): Conv2d(512, 256, kernel_size=(1, 1), stride=(2, 2), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (downsample): Sequential(
+          (0): Conv2d(512, 1024, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (1): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (2): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (3): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (4): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (5): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (6): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (7): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (8): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (9): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (10): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (11): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (12): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (13): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (14): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (15): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (16): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (17): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (18): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (19): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (20): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (21): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (22): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(256, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+    )
+    (layer4): ResLayer(
+      (0): Bottleneck(
+        (conv1): Conv2d(1024, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
+        (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(512, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (downsample): Sequential(
+          (0): Conv2d(1024, 2048, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (1): Bottleneck(
+        (conv1): Conv2d(2048, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(512, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+      (2): Bottleneck(
+        (conv1): Conv2d(2048, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): ModulatedDeformConv2dPack(
+          (conv_offset): Conv2d(512, 27, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+      )
+      init_cfg={'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+    )
+  )
+  init_cfg=[{'type': 'Kaiming', 'layer': 'Conv2d'}, {'type': 'Constant', 'val': 1, 'layer': ['_BatchNorm', 'GroupNorm']}]
+  (img_neck): FPN(
+    (lateral_convs): ModuleList(
+      (0): ConvModule(
+        (conv): Conv2d(512, 512, kernel_size=(1, 1), stride=(1, 1))
+      )
+      (1): ConvModule(
+        (conv): Conv2d(1024, 512, kernel_size=(1, 1), stride=(1, 1))
+      )
+      (2): ConvModule(
+        (conv): Conv2d(2048, 512, kernel_size=(1, 1), stride=(1, 1))
+      )
+    )
+    (fpn_convs): ModuleList(
+      (0): ConvModule(
+        (conv): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+      (1): ConvModule(
+        (conv): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+      (2): ConvModule(
+        (conv): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+    )
+  )
+  init_cfg={'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+  (grid_mask): GridMask()
+)
+2023-12-03 10:19:12,425 - mmdet - INFO - load checkpoint from local path: /home/renjun/program/occupancy_network/myproject/myocc/ckpts/r101_dcn_fcos3d_pretrain.pth
+2023-12-03 10:19:12,660 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for img_neck.lateral_convs.0.conv.weight: copying a param with shape torch.Size([256, 512, 1, 1]) from checkpoint, the shape in current model is torch.Size([512, 512, 1, 1]).
+size mismatch for img_neck.lateral_convs.0.conv.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([512]).
+size mismatch for img_neck.lateral_convs.1.conv.weight: copying a param with shape torch.Size([256, 1024, 1, 1]) from checkpoint, the shape in current model is torch.Size([512, 1024, 1, 1]).
+size mismatch for img_neck.lateral_convs.1.conv.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([512]).
+size mismatch for img_neck.lateral_convs.2.conv.weight: copying a param with shape torch.Size([256, 2048, 1, 1]) from checkpoint, the shape in current model is torch.Size([512, 2048, 1, 1]).
+size mismatch for img_neck.lateral_convs.2.conv.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([512]).
+size mismatch for img_neck.fpn_convs.0.conv.weight: copying a param with shape torch.Size([256, 256, 3, 3]) from checkpoint, the shape in current model is torch.Size([512, 512, 3, 3]).
+size mismatch for img_neck.fpn_convs.0.conv.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([512]).
+size mismatch for img_neck.fpn_convs.1.conv.weight: copying a param with shape torch.Size([256, 256, 3, 3]) from checkpoint, the shape in current model is torch.Size([512, 512, 3, 3]).
+size mismatch for img_neck.fpn_convs.1.conv.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([512]).
+size mismatch for img_neck.fpn_convs.2.conv.weight: copying a param with shape torch.Size([256, 256, 3, 3]) from checkpoint, the shape in current model is torch.Size([512, 512, 3, 3]).
+size mismatch for img_neck.fpn_convs.2.conv.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([512]).
+unexpected key in source state_dict: bbox_head.bld_alpha, bbox_head.cls_convs.0.conv.weight, bbox_head.cls_convs.0.conv.bias, bbox_head.cls_convs.0.gn.weight, bbox_head.cls_convs.0.gn.bias, bbox_head.cls_convs.1.conv.weight, bbox_head.cls_convs.1.conv.bias, bbox_head.cls_convs.1.conv.conv_offset.weight, bbox_head.cls_convs.1.conv.conv_offset.bias, bbox_head.cls_convs.1.gn.weight, bbox_head.cls_convs.1.gn.bias, bbox_head.reg_convs.0.conv.weight, bbox_head.reg_convs.0.conv.bias, bbox_head.reg_convs.0.gn.weight, bbox_head.reg_convs.0.gn.bias, bbox_head.reg_convs.1.conv.weight, bbox_head.reg_convs.1.conv.bias, bbox_head.reg_convs.1.conv.conv_offset.weight, bbox_head.reg_convs.1.conv.conv_offset.bias, bbox_head.reg_convs.1.gn.weight, bbox_head.reg_convs.1.gn.bias, bbox_head.conv_cls_prev.0.conv.weight, bbox_head.conv_cls_prev.0.conv.bias, bbox_head.conv_cls_prev.0.gn.weight, bbox_head.conv_cls_prev.0.gn.bias, bbox_head.conv_cls.weight, bbox_head.conv_cls.bias, bbox_head.conv_reg_prevs.0.0.conv.weight, bbox_head.conv_reg_prevs.0.0.conv.bias, bbox_head.conv_reg_prevs.0.0.gn.weight, bbox_head.conv_reg_prevs.0.0.gn.bias, bbox_head.conv_reg_prevs.1.0.conv.weight, bbox_head.conv_reg_prevs.1.0.conv.bias, bbox_head.conv_reg_prevs.1.0.gn.weight, bbox_head.conv_reg_prevs.1.0.gn.bias, bbox_head.conv_reg_prevs.2.0.conv.weight, bbox_head.conv_reg_prevs.2.0.conv.bias, bbox_head.conv_reg_prevs.2.0.gn.weight, bbox_head.conv_reg_prevs.2.0.gn.bias, bbox_head.conv_reg_prevs.3.0.conv.weight, bbox_head.conv_reg_prevs.3.0.conv.bias, bbox_head.conv_reg_prevs.3.0.gn.weight, bbox_head.conv_reg_prevs.3.0.gn.bias, bbox_head.conv_reg_prevs.5.0.conv.weight, bbox_head.conv_reg_prevs.5.0.conv.bias, bbox_head.conv_reg_prevs.5.0.gn.weight, bbox_head.conv_reg_prevs.5.0.gn.bias, bbox_head.conv_regs.0.weight, bbox_head.conv_regs.0.bias, bbox_head.conv_regs.1.weight, bbox_head.conv_regs.1.bias, bbox_head.conv_regs.2.weight, bbox_head.conv_regs.2.bias, bbox_head.conv_regs.3.weight, bbox_head.conv_regs.3.bias, bbox_head.conv_regs.4.weight, bbox_head.conv_regs.4.bias, bbox_head.conv_regs.5.weight, bbox_head.conv_regs.5.bias, bbox_head.conv_dir_cls_prev.0.conv.weight, bbox_head.conv_dir_cls_prev.0.conv.bias, bbox_head.conv_dir_cls_prev.0.gn.weight, bbox_head.conv_dir_cls_prev.0.gn.bias, bbox_head.conv_dir_cls.weight, bbox_head.conv_dir_cls.bias, bbox_head.conv_attr_prev.0.conv.weight, bbox_head.conv_attr_prev.0.conv.bias, bbox_head.conv_attr_prev.0.gn.weight, bbox_head.conv_attr_prev.0.gn.bias, bbox_head.conv_attr.weight, bbox_head.conv_attr.bias, bbox_head.conv_depth_cls_prev.0.conv.weight, bbox_head.conv_depth_cls_prev.0.conv.bias, bbox_head.conv_depth_cls_prev.0.gn.weight, bbox_head.conv_depth_cls_prev.0.gn.bias, bbox_head.conv_depth_cls.weight, bbox_head.conv_depth_cls.bias, bbox_head.conv_centerness_prev.0.conv.weight, bbox_head.conv_centerness_prev.0.conv.bias, bbox_head.conv_centerness_prev.0.gn.weight, bbox_head.conv_centerness_prev.0.gn.bias, bbox_head.conv_centerness.weight, bbox_head.conv_centerness.bias, bbox_head.scales.0.0.scale, bbox_head.scales.0.1.scale, bbox_head.scales.0.2.scale, bbox_head.scales.0.3.scale, bbox_head.scales.1.0.scale, bbox_head.scales.1.1.scale, bbox_head.scales.1.2.scale, bbox_head.scales.1.3.scale, bbox_head.scales.2.0.scale, bbox_head.scales.2.1.scale, bbox_head.scales.2.2.scale, bbox_head.scales.2.3.scale, bbox_head.scales.3.0.scale, bbox_head.scales.3.1.scale, bbox_head.scales.3.2.scale, bbox_head.scales.3.3.scale, bbox_head.scales.4.0.scale, bbox_head.scales.4.1.scale, bbox_head.scales.4.2.scale, bbox_head.scales.4.3.scale, img_neck.fpn_convs.3.conv.weight, img_neck.fpn_convs.3.conv.bias, img_neck.fpn_convs.4.conv.weight, img_neck.fpn_convs.4.conv.bias
+
+missing keys in source state_dict: pts_bbox_head.transformer.0.level_embeds, pts_bbox_head.transformer.0.cams_embeds, pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.weight, pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.bias, pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.attention_weights.weight, pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.attention_weights.bias, pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.value_proj.weight, pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.deformable_attention.value_proj.bias, pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.output_proj.weight, pts_bbox_head.transformer.0.encoder.layers.0.attentions.0.output_proj.bias, pts_bbox_head.transformer.0.encoder.layers.0.ffns.0.layers.0.0.weight, pts_bbox_head.transformer.0.encoder.layers.0.ffns.0.layers.0.0.bias, pts_bbox_head.transformer.0.encoder.layers.0.ffns.0.layers.1.weight, pts_bbox_head.transformer.0.encoder.layers.0.ffns.0.layers.1.bias, pts_bbox_head.transformer.0.encoder.layers.0.norms.0.weight, pts_bbox_head.transformer.0.encoder.layers.0.norms.0.bias, pts_bbox_head.transformer.0.encoder.layers.0.norms.1.weight, pts_bbox_head.transformer.0.encoder.layers.0.norms.1.bias, pts_bbox_head.transformer.0.encoder.layers.0.deblock.0.0.weight, pts_bbox_head.transformer.0.encoder.layers.0.deblock.0.1.weight, pts_bbox_head.transformer.0.encoder.layers.0.deblock.0.1.bias, pts_bbox_head.transformer.0.encoder.layers.0.deblock.1.0.weight, pts_bbox_head.transformer.0.encoder.layers.0.deblock.1.1.weight, pts_bbox_head.transformer.0.encoder.layers.0.deblock.1.1.bias, pts_bbox_head.transformer.0.reference_points.weight, pts_bbox_head.transformer.0.reference_points.bias, pts_bbox_head.transformer.1.level_embeds, pts_bbox_head.transformer.1.cams_embeds, pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.weight, pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.bias, pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.attention_weights.weight, pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.attention_weights.bias, pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.value_proj.weight, pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.deformable_attention.value_proj.bias, pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.output_proj.weight, pts_bbox_head.transformer.1.encoder.layers.0.attentions.0.output_proj.bias, pts_bbox_head.transformer.1.encoder.layers.0.ffns.0.layers.0.0.weight, pts_bbox_head.transformer.1.encoder.layers.0.ffns.0.layers.0.0.bias, pts_bbox_head.transformer.1.encoder.layers.0.ffns.0.layers.1.weight, pts_bbox_head.transformer.1.encoder.layers.0.ffns.0.layers.1.bias, pts_bbox_head.transformer.1.encoder.layers.0.norms.0.weight, pts_bbox_head.transformer.1.encoder.layers.0.norms.0.bias, pts_bbox_head.transformer.1.encoder.layers.0.norms.1.weight, pts_bbox_head.transformer.1.encoder.layers.0.norms.1.bias, pts_bbox_head.transformer.1.encoder.layers.0.deblock.0.0.weight, pts_bbox_head.transformer.1.encoder.layers.0.deblock.0.1.weight, pts_bbox_head.transformer.1.encoder.layers.0.deblock.0.1.bias, pts_bbox_head.transformer.1.encoder.layers.0.deblock.1.0.weight, pts_bbox_head.transformer.1.encoder.layers.0.deblock.1.1.weight, pts_bbox_head.transformer.1.encoder.layers.0.deblock.1.1.bias, pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.sampling_offsets.weight, pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.sampling_offsets.bias, pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.attention_weights.weight, pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.attention_weights.bias, pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.value_proj.weight, pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.deformable_attention.value_proj.bias, pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.output_proj.weight, pts_bbox_head.transformer.1.encoder.layers.1.attentions.0.output_proj.bias, pts_bbox_head.transformer.1.encoder.layers.1.ffns.0.layers.0.0.weight, pts_bbox_head.transformer.1.encoder.layers.1.ffns.0.layers.0.0.bias, pts_bbox_head.transformer.1.encoder.layers.1.ffns.0.layers.1.weight, pts_bbox_head.transformer.1.encoder.layers.1.ffns.0.layers.1.bias, pts_bbox_head.transformer.1.encoder.layers.1.norms.0.weight, pts_bbox_head.transformer.1.encoder.layers.1.norms.0.bias, pts_bbox_head.transformer.1.encoder.layers.1.norms.1.weight, pts_bbox_head.transformer.1.encoder.layers.1.norms.1.bias, pts_bbox_head.transformer.1.encoder.layers.1.deblock.0.0.weight, pts_bbox_head.transformer.1.encoder.layers.1.deblock.0.1.weight, pts_bbox_head.transformer.1.encoder.layers.1.deblock.0.1.bias, pts_bbox_head.transformer.1.encoder.layers.1.deblock.1.0.weight, pts_bbox_head.transformer.1.encoder.layers.1.deblock.1.1.weight, pts_bbox_head.transformer.1.encoder.layers.1.deblock.1.1.bias, pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.sampling_offsets.weight, pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.sampling_offsets.bias, pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.attention_weights.weight, pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.attention_weights.bias, pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.value_proj.weight, pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.deformable_attention.value_proj.bias, pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.output_proj.weight, pts_bbox_head.transformer.1.encoder.layers.2.attentions.0.output_proj.bias, pts_bbox_head.transformer.1.encoder.layers.2.ffns.0.layers.0.0.weight, pts_bbox_head.transformer.1.encoder.layers.2.ffns.0.layers.0.0.bias, pts_bbox_head.transformer.1.encoder.layers.2.ffns.0.layers.1.weight, pts_bbox_head.transformer.1.encoder.layers.2.ffns.0.layers.1.bias, pts_bbox_head.transformer.1.encoder.layers.2.norms.0.weight, pts_bbox_head.transformer.1.encoder.layers.2.norms.0.bias, pts_bbox_head.transformer.1.encoder.layers.2.norms.1.weight, pts_bbox_head.transformer.1.encoder.layers.2.norms.1.bias, pts_bbox_head.transformer.1.encoder.layers.2.deblock.0.0.weight, pts_bbox_head.transformer.1.encoder.layers.2.deblock.0.1.weight, pts_bbox_head.transformer.1.encoder.layers.2.deblock.0.1.bias, pts_bbox_head.transformer.1.encoder.layers.2.deblock.1.0.weight, pts_bbox_head.transformer.1.encoder.layers.2.deblock.1.1.weight, pts_bbox_head.transformer.1.encoder.layers.2.deblock.1.1.bias, pts_bbox_head.transformer.1.reference_points.weight, pts_bbox_head.transformer.1.reference_points.bias, pts_bbox_head.transformer.2.level_embeds, pts_bbox_head.transformer.2.cams_embeds, pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.weight, pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.sampling_offsets.bias, pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.attention_weights.weight, pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.attention_weights.bias, pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.value_proj.weight, pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.deformable_attention.value_proj.bias, pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.output_proj.weight, pts_bbox_head.transformer.2.encoder.layers.0.attentions.0.output_proj.bias, pts_bbox_head.transformer.2.encoder.layers.0.ffns.0.layers.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.0.ffns.0.layers.0.0.bias, pts_bbox_head.transformer.2.encoder.layers.0.ffns.0.layers.1.weight, pts_bbox_head.transformer.2.encoder.layers.0.ffns.0.layers.1.bias, pts_bbox_head.transformer.2.encoder.layers.0.norms.0.weight, pts_bbox_head.transformer.2.encoder.layers.0.norms.0.bias, pts_bbox_head.transformer.2.encoder.layers.0.norms.1.weight, pts_bbox_head.transformer.2.encoder.layers.0.norms.1.bias, pts_bbox_head.transformer.2.encoder.layers.0.deblock.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.0.deblock.0.1.weight, pts_bbox_head.transformer.2.encoder.layers.0.deblock.0.1.bias, pts_bbox_head.transformer.2.encoder.layers.0.deblock.1.0.weight, pts_bbox_head.transformer.2.encoder.layers.0.deblock.1.1.weight, pts_bbox_head.transformer.2.encoder.layers.0.deblock.1.1.bias, pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.sampling_offsets.weight, pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.sampling_offsets.bias, pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.attention_weights.weight, pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.attention_weights.bias, pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.value_proj.weight, pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.deformable_attention.value_proj.bias, pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.output_proj.weight, pts_bbox_head.transformer.2.encoder.layers.1.attentions.0.output_proj.bias, pts_bbox_head.transformer.2.encoder.layers.1.ffns.0.layers.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.1.ffns.0.layers.0.0.bias, pts_bbox_head.transformer.2.encoder.layers.1.ffns.0.layers.1.weight, pts_bbox_head.transformer.2.encoder.layers.1.ffns.0.layers.1.bias, pts_bbox_head.transformer.2.encoder.layers.1.norms.0.weight, pts_bbox_head.transformer.2.encoder.layers.1.norms.0.bias, pts_bbox_head.transformer.2.encoder.layers.1.norms.1.weight, pts_bbox_head.transformer.2.encoder.layers.1.norms.1.bias, pts_bbox_head.transformer.2.encoder.layers.1.deblock.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.1.deblock.0.1.weight, pts_bbox_head.transformer.2.encoder.layers.1.deblock.0.1.bias, pts_bbox_head.transformer.2.encoder.layers.1.deblock.1.0.weight, pts_bbox_head.transformer.2.encoder.layers.1.deblock.1.1.weight, pts_bbox_head.transformer.2.encoder.layers.1.deblock.1.1.bias, pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.sampling_offsets.weight, pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.sampling_offsets.bias, pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.attention_weights.weight, pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.attention_weights.bias, pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.value_proj.weight, pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.deformable_attention.value_proj.bias, pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.output_proj.weight, pts_bbox_head.transformer.2.encoder.layers.2.attentions.0.output_proj.bias, pts_bbox_head.transformer.2.encoder.layers.2.ffns.0.layers.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.2.ffns.0.layers.0.0.bias, pts_bbox_head.transformer.2.encoder.layers.2.ffns.0.layers.1.weight, pts_bbox_head.transformer.2.encoder.layers.2.ffns.0.layers.1.bias, pts_bbox_head.transformer.2.encoder.layers.2.norms.0.weight, pts_bbox_head.transformer.2.encoder.layers.2.norms.0.bias, pts_bbox_head.transformer.2.encoder.layers.2.norms.1.weight, pts_bbox_head.transformer.2.encoder.layers.2.norms.1.bias, pts_bbox_head.transformer.2.encoder.layers.2.deblock.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.2.deblock.0.1.weight, pts_bbox_head.transformer.2.encoder.layers.2.deblock.0.1.bias, pts_bbox_head.transformer.2.encoder.layers.2.deblock.1.0.weight, pts_bbox_head.transformer.2.encoder.layers.2.deblock.1.1.weight, pts_bbox_head.transformer.2.encoder.layers.2.deblock.1.1.bias, pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.sampling_offsets.weight, pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.sampling_offsets.bias, pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.attention_weights.weight, pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.attention_weights.bias, pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.value_proj.weight, pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.deformable_attention.value_proj.bias, pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.output_proj.weight, pts_bbox_head.transformer.2.encoder.layers.3.attentions.0.output_proj.bias, pts_bbox_head.transformer.2.encoder.layers.3.ffns.0.layers.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.3.ffns.0.layers.0.0.bias, pts_bbox_head.transformer.2.encoder.layers.3.ffns.0.layers.1.weight, pts_bbox_head.transformer.2.encoder.layers.3.ffns.0.layers.1.bias, pts_bbox_head.transformer.2.encoder.layers.3.norms.0.weight, pts_bbox_head.transformer.2.encoder.layers.3.norms.0.bias, pts_bbox_head.transformer.2.encoder.layers.3.norms.1.weight, pts_bbox_head.transformer.2.encoder.layers.3.norms.1.bias, pts_bbox_head.transformer.2.encoder.layers.3.deblock.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.3.deblock.0.1.weight, pts_bbox_head.transformer.2.encoder.layers.3.deblock.0.1.bias, pts_bbox_head.transformer.2.encoder.layers.3.deblock.1.0.weight, pts_bbox_head.transformer.2.encoder.layers.3.deblock.1.1.weight, pts_bbox_head.transformer.2.encoder.layers.3.deblock.1.1.bias, pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.sampling_offsets.weight, pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.sampling_offsets.bias, pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.attention_weights.weight, pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.attention_weights.bias, pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.value_proj.weight, pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.deformable_attention.value_proj.bias, pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.output_proj.weight, pts_bbox_head.transformer.2.encoder.layers.4.attentions.0.output_proj.bias, pts_bbox_head.transformer.2.encoder.layers.4.ffns.0.layers.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.4.ffns.0.layers.0.0.bias, pts_bbox_head.transformer.2.encoder.layers.4.ffns.0.layers.1.weight, pts_bbox_head.transformer.2.encoder.layers.4.ffns.0.layers.1.bias, pts_bbox_head.transformer.2.encoder.layers.4.norms.0.weight, pts_bbox_head.transformer.2.encoder.layers.4.norms.0.bias, pts_bbox_head.transformer.2.encoder.layers.4.norms.1.weight, pts_bbox_head.transformer.2.encoder.layers.4.norms.1.bias, pts_bbox_head.transformer.2.encoder.layers.4.deblock.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.4.deblock.0.1.weight, pts_bbox_head.transformer.2.encoder.layers.4.deblock.0.1.bias, pts_bbox_head.transformer.2.encoder.layers.4.deblock.1.0.weight, pts_bbox_head.transformer.2.encoder.layers.4.deblock.1.1.weight, pts_bbox_head.transformer.2.encoder.layers.4.deblock.1.1.bias, pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.sampling_offsets.weight, pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.sampling_offsets.bias, pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.attention_weights.weight, pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.attention_weights.bias, pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.value_proj.weight, pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.deformable_attention.value_proj.bias, pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.output_proj.weight, pts_bbox_head.transformer.2.encoder.layers.5.attentions.0.output_proj.bias, pts_bbox_head.transformer.2.encoder.layers.5.ffns.0.layers.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.5.ffns.0.layers.0.0.bias, pts_bbox_head.transformer.2.encoder.layers.5.ffns.0.layers.1.weight, pts_bbox_head.transformer.2.encoder.layers.5.ffns.0.layers.1.bias, pts_bbox_head.transformer.2.encoder.layers.5.norms.0.weight, pts_bbox_head.transformer.2.encoder.layers.5.norms.0.bias, pts_bbox_head.transformer.2.encoder.layers.5.norms.1.weight, pts_bbox_head.transformer.2.encoder.layers.5.norms.1.bias, pts_bbox_head.transformer.2.encoder.layers.5.deblock.0.0.weight, pts_bbox_head.transformer.2.encoder.layers.5.deblock.0.1.weight, pts_bbox_head.transformer.2.encoder.layers.5.deblock.0.1.bias, pts_bbox_head.transformer.2.encoder.layers.5.deblock.1.0.weight, pts_bbox_head.transformer.2.encoder.layers.5.deblock.1.1.weight, pts_bbox_head.transformer.2.encoder.layers.5.deblock.1.1.bias, pts_bbox_head.transformer.2.reference_points.weight, pts_bbox_head.transformer.2.reference_points.bias, pts_bbox_head.deblocks.0.0.weight, pts_bbox_head.deblocks.0.1.weight, pts_bbox_head.deblocks.0.1.bias, pts_bbox_head.deblocks.1.0.weight, pts_bbox_head.deblocks.1.1.weight, pts_bbox_head.deblocks.1.1.bias, pts_bbox_head.deblocks.2.0.weight, pts_bbox_head.deblocks.2.1.weight, pts_bbox_head.deblocks.2.1.bias, pts_bbox_head.deblocks.3.0.weight, pts_bbox_head.deblocks.3.1.weight, pts_bbox_head.deblocks.3.1.bias, pts_bbox_head.deblocks.4.0.weight, pts_bbox_head.deblocks.4.1.weight, pts_bbox_head.deblocks.4.1.bias, pts_bbox_head.deblocks.5.0.weight, pts_bbox_head.deblocks.5.1.weight, pts_bbox_head.deblocks.5.1.bias, pts_bbox_head.deblocks.6.0.weight, pts_bbox_head.deblocks.6.1.weight, pts_bbox_head.deblocks.6.1.bias, pts_bbox_head.occ.0.weight, pts_bbox_head.occ.1.weight, pts_bbox_head.occ.2.weight, pts_bbox_head.occ.3.weight, pts_bbox_head.volume_embedding.0.weight, pts_bbox_head.volume_embedding.1.weight, pts_bbox_head.volume_embedding.2.weight, pts_bbox_head.transfer_conv.0.0.weight, pts_bbox_head.transfer_conv.0.0.bias, pts_bbox_head.transfer_conv.1.0.weight, pts_bbox_head.transfer_conv.1.0.bias, pts_bbox_head.transfer_conv.2.0.weight, pts_bbox_head.transfer_conv.2.0.bias
+
+2023-12-03 10:19:12,665 - mmdet - INFO - Start running, host: renjun@cxhpc, work_dir: /home/renjun/program/occupancy_network/myproject/SurroundOcc/work_dirs/surroundocc
+2023-12-03 10:19:12,665 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) CosineAnnealingLrUpdaterHook       
+(NORMAL      ) CheckpointHook                     
+(NORMAL      ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) CosineAnnealingLrUpdaterHook       
+(NORMAL      ) EvalHook                           
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) CosineAnnealingLrUpdaterHook       
+(NORMAL      ) EvalHook                           
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(NORMAL      ) EvalHook                           
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(NORMAL      ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+ -------------------- 
+before_val_epoch:
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+ -------------------- 
+2023-12-03 10:19:12,665 - mmdet - INFO - workflow: [('train', 1)], max: 24 epochs
+2023-12-03 10:19:12,665 - mmdet - INFO - Checkpoints will be saved to /home/renjun/program/occupancy_network/myproject/SurroundOcc/work_dirs/surroundocc by HardDiskBackend.
