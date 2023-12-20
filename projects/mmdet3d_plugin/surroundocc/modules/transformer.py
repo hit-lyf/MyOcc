@@ -3,7 +3,7 @@
 # ---------------------------------------------
 #  Modified by Zhiqi Li
 # ---------------------------------------------
-
+import pdb
 from termios import BS0
 import numpy as np
 import torch
@@ -89,6 +89,7 @@ class PerceptionTransformer(BaseModule):
             volume_h,
             volume_w,
             volume_z,
+            ocls_condition,
             **kwargs):
 
         bs = mlvl_feats[0].size(0)
@@ -119,8 +120,7 @@ class PerceptionTransformer(BaseModule):
         feat_flatten = feat_flatten.permute(
             0, 2, 1, 3)  # (num_cam, H*W, bs, embed_dims)
 
-
-        volume_embed = self.encoder(
+        volume_embed, ocls_ps = self.encoder(
                 volume_queries,
                 feat_flatten,
                 feat_flatten,
@@ -129,9 +129,10 @@ class PerceptionTransformer(BaseModule):
                 volume_z=volume_z,
                 spatial_shapes=spatial_shapes,
                 level_start_index=level_start_index,
+                ocls_condition=ocls_condition,
                 **kwargs
             )
 
-        return volume_embed
+        return volume_embed, ocls_ps
 
 

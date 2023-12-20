@@ -67,6 +67,8 @@ class SpatialCrossAttention(BaseModule):
         self.num_cams = num_cams
         self.output_proj = nn.Linear(embed_dims, embed_dims)
         self.batch_first = batch_first
+        self.occ_pred = OccludedHead(inplanes=self.embed_dims, planes=int(self.embed_dims/16), dilations_conv_list=[1])
+
         self.init_weight()
 
     def init_weight(self):
@@ -78,6 +80,8 @@ class SpatialCrossAttention(BaseModule):
                 query,
                 key,
                 value,
+                ocls_condition,
+                use_occ_head,
                 residual=None,
                 query_pos=None,
                 key_padding_mask=None,
@@ -171,9 +175,16 @@ class SpatialCrossAttention(BaseModule):
         count = count.permute(1, 2, 0).sum(-1)
         count = torch.clamp(count, min=1.0)
         slots = slots / count[..., None]
-        slots = self.output_proj(slots)
-
-        return self.dropout(slots) + inp_residual
+        
+        if(use_occ_head):
+            slots = self.dropout(slots)
+            ocls_ps, voxs = self.occ_pred(slots, ocls_condition)
+            return voxs + inp_residual, ocls_ps
+        else:
+            ocls_ps = None
+            return self.dropout(slots) + inp_residual, ocls_ps
+    
+        
 
 
 @ATTENTION.register_module()
@@ -398,3 +409,99 @@ class MSDeformableAttention3D(BaseModule):
             output = output.permute(1, 0, 2)
 
         return output
+
+
+class OccludedHead(nn.Module):
+    """
+    3D Segmentation heads to retrieve semantic segmentation at each scale.
+    Formed by Dim expansion, Conv3D, ASPP block, Conv3D.
+    Taken from https://github.com/cv-rits/LMSCNet/blob/main/LMSCNet/models/LMSCNet.py#L7
+    """
+
+    def __init__(self, inplanes, planes, dilations_conv_list=[1,2,3]):
+        super().__init__()
+
+        # First convolution
+        self.conv0 = nn.Conv3d(inplanes, planes, kernel_size=3, padding=1, stride=1)
+
+        # ASPP Block
+        self.conv_list = dilations_conv_list
+        self.conv1 = nn.ModuleList(
+            [
+                nn.Conv3d(
+                    planes, planes, kernel_size=3, padding=dil, dilation=dil, bias=False
+                )
+           
+                for dil in dilations_conv_list
+            ]
+        )
+        self.bn1 = nn.ModuleList(
+            [nn.BatchNorm3d(planes) for dil in dilations_conv_list]
+        )
+        self.conv2 = nn.ModuleList(
+            [
+                nn.Conv3d(
+                    planes, planes, kernel_size=3, padding=dil, dilation=dil, bias=False
+                )
+                for dil in dilations_conv_list
+            ]
+        )
+        self.bn2 = nn.ModuleList(
+            [nn.BatchNorm3d(planes) for dil in dilations_conv_list]
+        )
+        self.relu = nn.ReLU()
+
+        occ_classes = 2
+
+        self.occ_classes = nn.Conv3d(
+            planes, occ_classes, kernel_size=3, padding=1, stride=1
+        )
+
+        self.sizes = {
+            '128': (100, 100, 8),
+            '256': (50, 50, 4),
+            '512': (25, 25, 2)
+        }
+
+    def forward(self, volume_embed, ocls_id):
+        '''
+            volume_embed: [bs, N, embed_dim]
+            ocls_id: [bs, N, max_ocls_len * 2]
+        '''
+        bs, N, embed_dim = volume_embed.shape
+        vol_size = self.sizes[str(embed_dim)]
+        volume_embed = volume_embed.permute(0, 2, 1).reshape(bs, embed_dim, vol_size[0], vol_size[1],vol_size[2])
+        # Convolution to go from inplanes to planes features...
+        vol_embed = self.relu(self.conv0(volume_embed))
+
+        y = self.bn2[0](self.conv2[0](self.relu(self.bn1[0](self.conv1[0](vol_embed)))))
+        for i in range(1, len(self.conv_list)):
+            y += self.bn2[i](self.conv2[i](self.relu(self.bn1[i](self.conv1[i](vol_embed)))))
+        vol_embed = self.relu(y + vol_embed)  # modified
+
+        x_occ = self.occ_classes(vol_embed)
+        x_occ = torch.softmax(x_occ, dim=1) # (1, 2, 100, 100, 8)
+        pred_occ = x_occ[:,0] # (1, 100, 100, 8)
+        bs, h, w, z = pred_occ.shape
+
+        m = torch.tensor([0]).to(pred_occ.device)
+        pred_occ = pred_occ.reshape(-1)
+        pred_occl = torch.cat([pred_occ, m])
+
+        _, N, W = ocls_id.shape
+        ocls_id = ocls_id.squeeze(0).to(torch.long)
+        pred_p1 = torch.sum(pred_occl[ocls_id[:, :int(W/2)].reshape(-1)].reshape(N,int(W/2)), dim=1)
+        pred_p2 = torch.sum(pred_occl[ocls_id[:, int(W/2):].reshape(-1)].reshape(N,int(W/2)), dim=1)
+
+        # 判断被几个相机看到
+        num_ocls_m = (ocls_id[:,int(W/2)] != -1)  
+        num_ocls = torch.ones_like(pred_p1)
+        num_ocls[num_ocls_m] = 2
+
+        pred_p = (pred_p1 + pred_p2) / num_ocls
+        pred_ocls_p = torch.exp((-1) * pred_p)
+        total_p = (pred_ocls_p * pred_occ).reshape(bs, 1, h, w, z)
+        vox = (volume_embed * total_p).reshape(bs, N, embed_dim)
+        pred_occ = pred_occ.reshape(bs, h, w, z)
+
+        return x_occ, vox

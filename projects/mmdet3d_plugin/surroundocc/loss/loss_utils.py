@@ -26,24 +26,30 @@ def geo_scal_loss(pred, ssc_target, semantic=True):
     else:
         empty_probs = 1 - torch.sigmoid(pred)
     nonempty_probs = 1 - empty_probs
-
+    
     # Remove unknown voxels
     mask = ssc_target != 255
     nonempty_target = ssc_target != 0
     nonempty_target = nonempty_target[mask].float()
     nonempty_probs = nonempty_probs[mask]
     empty_probs = empty_probs[mask]
-
+    
     intersection = (nonempty_target * nonempty_probs).sum()
     precision = intersection / nonempty_probs.sum()
     recall = intersection / nonempty_target.sum()
     spec = ((1 - nonempty_target) * (empty_probs)).sum() / (1 - nonempty_target).sum()
-    pdb.set_trace()
-    return (
-        F.binary_cross_entropy(precision, torch.ones_like(precision))
-        + F.binary_cross_entropy(recall, torch.ones_like(recall))
-        + F.binary_cross_entropy(spec, torch.ones_like(spec))
-    )
+
+    k1 = F.binary_cross_entropy(precision, torch.ones_like(precision))
+    k2 = F.binary_cross_entropy(recall, torch.ones_like(recall))
+    k3 = F.binary_cross_entropy(spec, torch.ones_like(spec))
+
+    
+    return k1+k2+k3
+    # return (
+    #     F.binary_cross_entropy(precision, torch.ones_like(precision))
+    #     + F.binary_cross_entropy(recall, torch.ones_like(recall))
+    #     + F.binary_cross_entropy(spec, torch.ones_like(spec))
+    # )
 
 
 def sem_scal_loss(pred, ssc_target):

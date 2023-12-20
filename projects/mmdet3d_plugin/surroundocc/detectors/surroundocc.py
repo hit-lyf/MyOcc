@@ -60,9 +60,7 @@ class SurroundOcc(MVXTwoStageDetector):
 
         self.use_semantic = use_semantic
         self.is_vis = is_vis
-                  
-
-
+     
     def extract_img_feat(self, img, img_metas, len_queue=None):
         """Extract features of images."""
         B = img.size(0)
@@ -97,26 +95,6 @@ class SurroundOcc(MVXTwoStageDetector):
                 img_feats_reshaped.append(img_feat.view(B, int(BN / B), C, H, W))
         return img_feats_reshaped
 
-    @auto_fp16(apply_to=('img'))
-    def extract_feat(self, img, img_metas=None, len_queue=None):
-        """Extract features from images and points."""
-
-        img_feats = self.extract_img_feat(img, img_metas, len_queue=len_queue)
-        
-        return img_feats
-
-
-    def forward_pts_train(self,
-                          pts_feats,
-                          gt_occ,
-                          img_metas):
-
-        outs = self.pts_bbox_head(
-            pts_feats, img_metas)
-        loss_inputs = [gt_occ, outs]
-        losses = self.pts_bbox_head.loss(*loss_inputs, img_metas=img_metas)
-        return losses
-
     def forward_dummy(self, img):
         dummy_metas = None
         return self.forward_test(img=img, img_metas=[[dummy_metas]])
@@ -131,6 +109,7 @@ class SurroundOcc(MVXTwoStageDetector):
         list[list[dict]]), with the outer list indicating test time
         augmentations.
         """
+
         if return_loss:
             return self.forward_train(**kwargs)
         else:
@@ -141,17 +120,37 @@ class SurroundOcc(MVXTwoStageDetector):
     def forward_train(self,
                       img_metas=None,
                       gt_occ=None,
-                      img=None
+                      img=None,
+                      ocls_condition = None
                       ):
 
         img_feats = self.extract_feat(img=img, img_metas=img_metas)
         losses = dict()
-        losses_pts = self.forward_pts_train(img_feats, gt_occ,
-                                             img_metas)
+        losses_pts = self.forward_pts_train(img_feats, gt_occ, img_metas, ocls_condition)
 
         losses.update(losses_pts)
         return losses
 
+    @auto_fp16(apply_to=('img'))
+    def extract_feat(self, img, img_metas=None, len_queue=None):
+        """Extract features from images and points."""
+
+        img_feats = self.extract_img_feat(img, img_metas, len_queue=len_queue)
+        
+        return img_feats
+
+    def forward_pts_train(self,
+                          pts_feats,
+                          gt_occ,
+                          img_metas,
+                          ocls_condition
+                          ):
+
+        outs = self.pts_bbox_head(pts_feats, img_metas, ocls_condition)
+        loss_inputs = [gt_occ, outs]
+        losses = self.pts_bbox_head.loss(*loss_inputs, img_metas=img_metas)
+        return losses
+    
     def forward_test(self, img_metas, img=None, gt_occ=None, **kwargs):
         
         output = self.simple_test(
@@ -177,9 +176,9 @@ class SurroundOcc(MVXTwoStageDetector):
         
 
 
-    def simple_test_pts(self, x, img_metas, rescale=False):
+    def simple_test_pts(self, x, img_metas, ocls_condition=None, rescale=False):
         """Test function"""
-        outs = self.pts_bbox_head(x, img_metas)
+        outs = self.pts_bbox_head(x, img_metas, ocls_condition)
 
         return outs
 

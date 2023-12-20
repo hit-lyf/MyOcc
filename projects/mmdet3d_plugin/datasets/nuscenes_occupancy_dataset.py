@@ -75,6 +75,22 @@ class CustomNuScenesOccDataset(NuScenesDataset):
             pc_range = np.array(self.pc_range)
         )
 
+        # 读取遮挡关系
+        ocls = []
+        sample_token = info['token']
+        ocls_root = os.path.join(self.data_root, 'vox_grid')
+        path_olcs_100 = os.path.join(ocls_root, sample_token + '_100' )
+        path_olcs_50 = os.path.join(ocls_root, sample_token + '_50' )
+        path_olcs_25 = os.path.join(ocls_root, sample_token + '_25' )
+
+        olcs_100 = torch.load(path_olcs_100)
+        olcs_50 = torch.load(path_olcs_50)
+        olcs_25 = torch.load(path_olcs_25)
+        
+        ocls.append(olcs_100)
+        ocls.append(olcs_50)
+        ocls.append(olcs_25)
+
         if self.modality['use_camera']:
             image_paths = []
             lidar2img_rts = []
@@ -111,6 +127,7 @@ class CustomNuScenesOccDataset(NuScenesDataset):
                     lidar2img=lidar2img_rts,
                     cam_intrinsic=cam_intrinsics,
                     lidar2cam=lidar2cam_rts,
+                    ocls_condition = ocls
                 ))
 
         if not self.test_mode:

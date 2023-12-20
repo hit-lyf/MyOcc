@@ -29,6 +29,9 @@ from mmseg import __version__ as mmseg_version
 
 from mmcv.utils import TORCH_VERSION, digit_version
 
+import warnings
+warnings.filterwarnings("ignore")
+
 
 
 def parse_args():

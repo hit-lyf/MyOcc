@@ -116,7 +116,8 @@ train_pipeline = [
     dict(type='NormalizeMultiviewImage', **img_norm_cfg),
     dict(type='PadMultiViewImage', size_divisor=32),
     dict(type='DefaultFormatBundle3D', class_names=class_names, with_label=False),
-    dict(type='CustomCollect3D', keys=['img', 'gt_occ'])
+    # dict(type='CustomCollect3D', keys=['img', 'gt_occ'])
+    dict(type='CustomCollect3D', keys=['img', 'gt_occ', 'ocls_condition'])
 ]
 
 test_pipeline = [
@@ -190,7 +191,8 @@ evaluation = dict(interval=1, pipeline=test_pipeline)
 
 runner = dict(type='EpochBasedRunner', max_epochs=total_epochs)
 # load_from = '/home/renjun/program/occupancy_network/myproject/SurroundOcc-main/ckpts/r101_dcn_fcos3d_pretrain.pth'
-load_from = '/home/renjun/program/occupancy_network/myproject/myocc/ckpts/r101_dcn_fcos3d_pretrain.pth'
+# load_from = '/home/renjun/program/occupancy_network/myproject/myocc/ckpts/r101_dcn_fcos3d_pretrain.pth'
+load_from = '/mnt/sda-20T/rj/exp_out/myocc_out/sur_6.0/output/latest.pth'
 log_config = dict(
     interval=1,
     hooks=[

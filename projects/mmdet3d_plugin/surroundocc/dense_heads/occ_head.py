@@ -122,13 +122,18 @@ class OccHead(nn.Module):
                     stride=1,
                     padding=1)
 
-
             deblock = nn.Sequential(upsample_layer,
                                     build_norm_layer(norm_cfg, out_channel)[1],
                                     nn.ReLU(inplace=True))
 
             self.deblocks.append(deblock)
 
+        self.occ_pred = build_conv_layer(conv_cfg,
+                                        in_channels=32,
+                                        out_channels=2,
+                                        kernel_size=3,
+                                        stride=1,
+                                        padding=1)
 
         self.occ = nn.ModuleList()
         for i in self.out_indices:
@@ -185,12 +190,13 @@ class OccHead(nn.Module):
                 constant_init(m.conv_offset, 0)
 
     @auto_fp16(apply_to=('mlvl_feats'))
-    def forward(self, mlvl_feats, img_metas):
+    def forward(self, mlvl_feats, img_metas, ocls_condition):
 
         bs, num_cam, _, _, _ = mlvl_feats[0].shape
         dtype = mlvl_feats[0].dtype
 
         volume_embed = []
+        ocls_ps = []
         for i in range(self.fpn_level):
             volume_queries = self.volume_embedding[i].weight.to(dtype)
             
@@ -201,17 +207,20 @@ class OccHead(nn.Module):
             _, _, C, H, W = mlvl_feats[i].shape
             view_features = self.transfer_conv[i](mlvl_feats[i].reshape(bs*num_cam, C, H, W)).reshape(bs, num_cam, -1, H, W)
 
-            volume_embed_i = self.transformer[i](
+            volume_embed_i, ocls_p = self.transformer[i](
                 [view_features],
                 volume_queries,
                 volume_h=volume_h,
                 volume_w=volume_w,
                 volume_z=volume_z,
-                img_metas=img_metas
+                img_metas=img_metas,
+                ocls_condition=ocls_condition[i]
             )
             volume_embed.append(volume_embed_i)
+            ocls_ps.append(ocls_p)
         
-
+        ocls_ps[0], ocls_ps[1], ocls_ps[2] = ocls_ps[2], ocls_ps[1], ocls_ps[0]
+        
         volume_embed_reshape = []
         for i in range(self.fpn_level):
             volume_h = self.volume_h[i]
@@ -232,9 +241,10 @@ class OccHead(nn.Module):
             elif i < len(self.deblocks) - 2:  # we do not add skip connection at level 0
                 volume_embed_temp = volume_embed_reshape.pop()
                 result = result + volume_embed_temp
-            
-
-
+        
+        occ_2classfiy = self.occ_pred(outputs[-1])
+        ocls_ps.append(occ_2classfiy)
+        
         occ_preds = []
         for i in range(len(outputs)):
             occ_pred = self.occ[i](outputs[i])
@@ -244,17 +254,19 @@ class OccHead(nn.Module):
         outs = {
             'volume_embed': volume_embed,
             'occ_preds': occ_preds,
+            'ocls_ps':ocls_ps
         }
 
         return outs
 
+    
 
     @force_fp32(apply_to=('preds_dicts'))
     def loss(self,
              gt_occ,
              preds_dicts,
              img_metas):
-     
+        
         if not self.use_semantic:
             loss_dict = {}
             for i in range(len(preds_dicts['occ_preds'])):
@@ -274,16 +286,11 @@ class OccHead(nn.Module):
                 loss_dict['loss_occ_{}'.format(i)] = loss_occ_i
     
         else:
-            pred = preds_dicts['occ_preds']
-            
-            criterion = nn.CrossEntropyLoss(
-                ignore_index=255, reduction="mean"
-            )
-            
+           
+            criterion = nn.CrossEntropyLoss(ignore_index=255, reduction="mean")
             loss_dict = {}
-        
-            for i in range(len(preds_dicts['occ_preds'])):
 
+            for i in range(len(preds_dicts['occ_preds'])):
                 pred = preds_dicts['occ_preds'][i]
                 ratio = 2**(len(preds_dicts['occ_preds']) - 1 - i)
                 
@@ -291,11 +298,17 @@ class OccHead(nn.Module):
 
                 loss_occ_i = (criterion(pred, gt.long()) + sem_scal_loss(pred, gt.long()) + geo_scal_loss(pred, gt.long()))
 
+                gt_occ_2classfiy = gt.clone()
+                gt_occ_2classfiy[(gt_occ_2classfiy!=0) & (gt_occ_2classfiy!=255)] = 1
+                
+                ocls_p = preds_dicts['ocls_ps'][i]
+                loss_ocls_i = criterion(ocls_p, gt_occ_2classfiy.long()) * 10
+                loss_occ_i = loss_occ_i + loss_ocls_i
+                
                 loss_occ_i = loss_occ_i * ((0.5)**(len(preds_dicts['occ_preds']) - 1 -i))
+                loss_dict['loss_ocls_{}'.format(i)] = loss_ocls_i
+                loss_dict['loss_occ_{}'.format(i)] = loss_occ_i       
 
-                loss_dict['loss_occ_{}'.format(i)] = loss_occ_i
+            return loss_dict
 
-                    
-        return loss_dict
-
-        
+    

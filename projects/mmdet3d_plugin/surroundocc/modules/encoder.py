@@ -137,6 +137,7 @@ class OccEncoder(TransformerLayerSequence):
                 key,
                 value,
                 *args,
+                ocls_condition = None,
                 volume_h=None,
                 volume_w=None,
                 volume_z=None,
@@ -174,7 +175,12 @@ class OccEncoder(TransformerLayerSequence):
         volume_query = volume_query.permute(1, 0, 2)
 
         for lid, layer in enumerate(self.layers):
-            output = layer(
+            if (lid == (len(self.layers) - 1)):
+                use_occ_head = True
+            else:
+                use_occ_head = False
+
+            output, ocls_ps = layer(
                 volume_query,
                 key,
                 value,
@@ -187,6 +193,8 @@ class OccEncoder(TransformerLayerSequence):
                 level_start_index=level_start_index,
                 reference_points_cam=reference_points_cam,
                 bev_mask=volume_mask,
+                use_occ_head=use_occ_head,
+                ocls_condition=ocls_condition,
                 **kwargs)
 
             volume_query = output
@@ -196,7 +204,7 @@ class OccEncoder(TransformerLayerSequence):
         if self.return_intermediate:
             return torch.stack(intermediate)
 
-        return output
+        return output, ocls_ps
 
 
 @TRANSFORMER_LAYER.register_module()
@@ -280,6 +288,8 @@ class OccLayer(MyCustomBaseTransformerLayer):
                 mask=None,
                 spatial_shapes=None,
                 level_start_index=None,
+                ocls_condition=None,
+                use_occ_head=None,
                 **kwargs):
         """Forward function for `TransformerDecoderLayer`.
 
@@ -347,10 +357,12 @@ class OccLayer(MyCustomBaseTransformerLayer):
 
             # spaital cross attention
             elif layer == 'cross_attn':
-                query = self.attentions[attn_index](
+                query, ocls_ps = self.attentions[attn_index](
                     query,
                     key,
                     value,
+                    ocls_condition,  # 生成的遮挡关系 
+                    use_occ_head,  # 是否使用分类头
                     identity if self.pre_norm else None,
                     query_pos=query_pos,
                     key_pos=key_pos,
@@ -371,4 +383,4 @@ class OccLayer(MyCustomBaseTransformerLayer):
                 ffn_index += 1
             
 
-        return query
+        return query, ocls_ps
