@@ -1,4 +1,4 @@
-# SurroundOcc
+# SurroundOcc Sur 1
 ### [Project Page](https://weiyithu.github.io/SurroundOcc/) | [Paper](https://arxiv.org/abs/2303.09551) | [Video](https://cloud.tsinghua.edu.cn/d/97b74c039b8d4fd48830/) | [Data](https://cloud.tsinghua.edu.cn/d/8dcb547238144d08a0bb/)
 <br/>
 
